@@ -17,5 +17,6 @@
 -->
 
 <bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@drawable/ab_texture_tile_sgit"
-    android:tileMode="repeat" />
+        android:dither="true"
+        android:src="@drawable/ab_texture_tile_sgit"
+        android:tileMode="repeat"/>

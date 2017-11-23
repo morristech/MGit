@@ -7,10 +7,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
-import android.widget.SearchView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -54,7 +54,8 @@ public class RepoListActivity extends SheimiFragmentActivity {
         mContext = getApplicationContext();
 
         Uri uri = this.getIntent().getData();
-        if(uri != null){
+        if (uri != null) {
+
             URL mRemoteRepoUrl = null;
             try {
                 mRemoteRepoUrl = new URL(uri.getScheme(), uri.getHost(), uri.getPath());
@@ -62,34 +63,29 @@ public class RepoListActivity extends SheimiFragmentActivity {
                 Toast.makeText(mContext, R.string.invalid_url, Toast.LENGTH_LONG).show();
                 e.printStackTrace();
             }
+            if (mRemoteRepoUrl != null) {
 
-            if(mRemoteRepoUrl != null){
                 String remoteUrl = mRemoteRepoUrl.toString();
-                String repoName = remoteUrl.substring(remoteUrl.lastIndexOf("/")+1);
+                String repoName = remoteUrl.substring(remoteUrl.lastIndexOf("/") + 1);
                 StringBuilder repoUrlBuilder = new StringBuilder(remoteUrl);
-
                 //need git extension to clone some repos
-                if(!remoteUrl.toLowerCase().endsWith(getString(R.string.git_extension)))
-                {
+                if (!remoteUrl.toLowerCase().endsWith(getString(R.string.git_extension))) {
                     repoUrlBuilder.append(getString(R.string.git_extension));
+                } else {
+                    repoName = repoName.substring(0, repoName.lastIndexOf('.'));
                 }
-                else//if has git extension remove it from repository name
-                    {
-                        repoName = repoName.substring(0, repoName.lastIndexOf('.'));
-                    }
-
                 //Check if there are others repositories with same remote
-                List<Repo> repositoriesWithSameRemote = Repo.getRepoList(mContext,  RepoDbManager.searchRepo(remoteUrl));
-
+                List<Repo> repositoriesWithSameRemote = Repo.getRepoList(mContext, RepoDbManager.searchRepo(remoteUrl));
                 //if so, just open it
-                if(repositoriesWithSameRemote.size() > 0){
+                if (repositoriesWithSameRemote.size() > 0) {
+
                     Toast.makeText(mContext, R.string.repository_already_present, Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(mContext, RepoDetailActivity.class);
                     intent.putExtra(Repo.TAG, repositoriesWithSameRemote.get(0));
                     startActivity(intent);
-                }
-                else{
-                    Repo mRepo = Repo.createRepo(repoName , repoUrlBuilder.toString() );
+                } else {
+
+                    Repo mRepo = Repo.createRepo(repoName, repoUrlBuilder.toString());
                     Boolean isRecursive = true;
                     CloneTask task = new CloneTask(mRepo, isRecursive, null);
                     task.executeTask();
@@ -109,8 +105,10 @@ public class RepoListActivity extends SheimiFragmentActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         Intent intent;
         switch (item.getItemId()) {
+
             case R.id.action_new:
                 CloneDialog cloneDialog = new CloneDialog();
                 cloneDialog.show(getSupportFragmentManager(), "clone-dialog");
@@ -124,14 +122,18 @@ public class RepoListActivity extends SheimiFragmentActivity {
                 intent = new Intent(this, UserSettingsActivity.class);
                 startActivity(intent);
                 return true;
+            default:
+                return super.onOptionsItemSelected(item);
+
         }
-        return super.onOptionsItemSelected(item);
     }
 
     public void configSearchAction(MenuItem searchItem) {
+
         SearchView searchView = (SearchView) searchItem.getActionView();
-        if (searchView == null)
+        if (searchView == null) {
             return;
+        }
         SearchListener searchListener = new SearchListener();
         searchItem.setOnActionExpandListener(searchListener);
         searchView.setIconifiedByDefault(true);
@@ -140,12 +142,14 @@ public class RepoListActivity extends SheimiFragmentActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode != Activity.RESULT_OK)
+
+        if (resultCode != Activity.RESULT_OK) {
             return;
+        }
         switch (requestCode) {
             case REQUEST_IMPORT_REPO:
                 final String path = data.getExtras().getString(
-                        ExploreFileActivity.RESULT_PATH);
+                    ExploreFileActivity.RESULT_PATH);
                 File file = new File(path);
                 File dotGit = new File(file, Repo.DOT_GIT_DIR);
                 if (!dotGit.exists()) {
@@ -153,39 +157,51 @@ public class RepoListActivity extends SheimiFragmentActivity {
                     return;
                 }
                 AlertDialog.Builder builder = new AlertDialog.Builder(
-                        this);
+                    this);
                 builder.setTitle(R.string.dialog_comfirm_import_repo_title);
                 builder.setMessage(R.string.dialog_comfirm_import_repo_msg);
                 builder.setNegativeButton(R.string.label_cancel,
-                        new DummyDialogListener());
+                    new DummyDialogListener());
                 builder.setPositiveButton(R.string.label_import,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(
-                                    DialogInterface dialogInterface, int i) {
-                                Bundle args = new Bundle();
-                                args.putString(ImportLocalRepoDialog.FROM_PATH, path);
-                                ImportLocalRepoDialog rld = new ImportLocalRepoDialog();
-                                rld.setArguments(args);
-                                rld.show(getSupportFragmentManager(), "import-local-dialog");
-                            }
-                        });
+                    new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(
+                            DialogInterface dialogInterface, int i) {
+                            Bundle args = new Bundle();
+                            args.putString(ImportLocalRepoDialog.FROM_PATH, path);
+                            ImportLocalRepoDialog rld = new ImportLocalRepoDialog();
+                            rld.setArguments(args);
+                            rld.show(getSupportFragmentManager(), "import-local-dialog");
+                        }
+
+                    });
                 builder.show();
                 break;
         }
     }
 
-    public class SearchListener implements SearchView.OnQueryTextListener,
-            MenuItem.OnActionExpandListener {
+    public class SearchListener implements SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
 
         @Override
         public boolean onQueryTextSubmit(String s) {
+
+            if (mRepoListAdapter != null) {
+
+                mRepoListAdapter.searchRepo(s);
+                return true;
+            }
             return false;
         }
 
         @Override
         public boolean onQueryTextChange(String s) {
-            mRepoListAdapter.searchRepo(s);
+
+            if (mRepoListAdapter != null) {
+
+                mRepoListAdapter.searchRepo(s);
+                return true;
+            }
             return false;
         }
 

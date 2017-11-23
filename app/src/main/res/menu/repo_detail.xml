@@ -1,14 +1,19 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
         android:id="@+id/action_search"
-        android:actionViewClass="android.widget.SearchView"
         android:icon="@drawable/ic_search"
-        android:showAsAction="always|collapseActionView"
-        android:visible="false"
-        android:title="@string/action_search"/>
+        android:iconifiedByDefault="true"
+        android:title="@string/action_search"
+        app:actionViewClass="android.support.v7.widget.SearchView"
+        app:showAsAction="collapseActionView|ifRoom"/>
+
     <item
-            android:id="@+id/action_toggle_drawer"
-            android:title="@string/action_toggle_drawer"
-            android:icon="@drawable/ic_drawer"
-            android:showAsAction="always"/>
+        android:id="@+id/action_toggle_drawer"
+        android:icon="@drawable/ic_drawer"
+        android:title="@string/action_toggle_drawer"
+        app:showAsAction="ifRoom"/>
+
 </menu>

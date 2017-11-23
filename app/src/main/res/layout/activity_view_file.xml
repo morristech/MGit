@@ -2,6 +2,7 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:fitsSystemWindows="true"
                 tools:context=".activities.ViewFileActivity">
 
     <android.support.v4.view.ViewPager
@@ -14,9 +15,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="top"
-            android:background="?drawable/pager_title_strip_background"
+            android:background="@drawable/pager_title_strip_background"
             android:paddingBottom="4dp"
             android:paddingTop="4dp"
             android:textColor="#fff" />
+
     </android.support.v4.view.ViewPager>
+
 </RelativeLayout>

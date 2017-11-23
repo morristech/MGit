@@ -1,5 +1,22 @@
 package me.sheimi.sgit.fragments;
 
+import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.ActionMode;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
+
+import org.eclipse.jgit.revwalk.RevCommit;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -13,30 +30,11 @@ import me.sheimi.sgit.adapters.CommitsListAdapter;
 import me.sheimi.sgit.database.models.Repo;
 import me.sheimi.sgit.dialogs.CheckoutDialog;
 
-import org.eclipse.jgit.revwalk.RevCommit;
-
-import android.app.Activity;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.ActionMode;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
-import android.widget.SearchView;
-
 /**
  * Created by sheimi on 8/5/13.
  */
 public class CommitsFragment extends BaseFragment implements
-        ActionMode.Callback {
+    ActionMode.Callback {
 
     private final static String IS_ACTION_MODE = "is action mode";
     private final static String CHOSEN_ITEM = "chosen item";
@@ -63,13 +61,13 @@ public class CommitsFragment extends BaseFragment implements
         return fragment;
     }
 
-    public void setFilter(String query){
+    public void setFilter(String query) {
         mCommitsListAdapter.setFilter(query);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_commits, container, false);
         if (getRawActivity() instanceof RepoDetailActivity) {
             ((RepoDetailActivity) getRawActivity()).setCommitsFragment(this);
@@ -82,38 +80,38 @@ public class CommitsFragment extends BaseFragment implements
         }
         mFile = bundle.getString(FILE);
         mClipboard = (ClipboardManager) getRawActivity().getSystemService(
-                Activity.CLIPBOARD_SERVICE);
+            Activity.CLIPBOARD_SERVICE);
         mCommitsList = (ListView) v.findViewById(R.id.commitsList);
         mCommitsListAdapter = new CommitsListAdapter(getRawActivity(),
-                mChosenItem, mRepo, mFile);
+            mChosenItem, mRepo, mFile);
         mCommitsListAdapter.resetCommit();
         mCommitsList.setAdapter(mCommitsListAdapter);
 
         mCommitsList
-                .setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> adapterView,
-                            View view, int position, long id) {
-                        if (mActionMode == null) {
-                            RevCommit newCommit = mCommitsListAdapter.getItem(position);
-                            showDiff(null, null, newCommit.getName(), true);
-                            return;
-                        }
-                        chooseItem(position);
+            .setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView,
+                                        View view, int position, long id) {
+                    if (mActionMode == null) {
+                        RevCommit newCommit = mCommitsListAdapter.getItem(position);
+                        showDiff(null, null, newCommit.getName(), true);
+                        return;
                     }
-                });
+                    chooseItem(position);
+                }
+            });
         mCommitsList
-                .setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-                    @Override
-                    public boolean onItemLongClick(AdapterView<?> adapterView,
-                            View view, int position, long l) {
-			if (mActionMode == null) {
-                            enterDiffActionMode();
-                        }
-			chooseItem(position);
-                        return true;
+            .setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> adapterView,
+                                               View view, int position, long l) {
+                    if (mActionMode == null) {
+                        enterDiffActionMode();
                     }
-                });
+                    chooseItem(position);
+                    return true;
+                }
+            });
         reset();
         return v;
     }
@@ -127,7 +125,7 @@ public class CommitsFragment extends BaseFragment implements
         boolean isActionMode = savedInstanceState.getBoolean(IS_ACTION_MODE);
         if (isActionMode) {
             List<Integer> itemsInt = savedInstanceState
-                    .getIntegerArrayList(CHOSEN_ITEM);
+                .getIntegerArrayList(CHOSEN_ITEM);
             mActionMode = getRawActivity().startActionMode(this);
             mChosenItem.addAll(itemsInt);
             mCommitsListAdapter.notifyDataSetChanged();
@@ -174,7 +172,7 @@ public class CommitsFragment extends BaseFragment implements
     private void showDiff(ActionMode actionMode, String oldCommit, String newCommit,
                           boolean showDescription) {
         Intent intent = new Intent(getRawActivity(),
-                CommitDiffActivity.class);
+            CommitDiffActivity.class);
         if (oldCommit != null) {
             intent.putExtra(CommitDiffActivity.OLD_COMMIT, oldCommit);
         }
@@ -197,7 +195,7 @@ public class CommitsFragment extends BaseFragment implements
                     return true;
                 }
                 int item1,
-                        item2;
+                    item2;
                 item1 = items[0];
                 if (items.length == 1) {
                     item2 = item1 + 1;
@@ -212,9 +210,9 @@ public class CommitsFragment extends BaseFragment implements
                 int smaller = Math.min(item1, item2);
                 int larger = Math.max(item1, item2);
                 String oldCommit = mCommitsListAdapter.getItem(larger)
-                        .getName();
+                    .getName();
                 String newCommit = mCommitsListAdapter.getItem(smaller)
-                        .getName();
+                    .getName();
                 showDiff(actionMode, oldCommit, newCommit, false);
                 return true;
             case R.id.action_mode_copy_commit: {

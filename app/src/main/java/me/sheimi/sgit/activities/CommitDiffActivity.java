@@ -1,5 +1,29 @@
 package me.sheimi.sgit.activities;
 
+import android.content.Intent;
+import android.graphics.Color;
+import android.net.Uri;
+import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.ShareActionProvider;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.widget.ProgressBar;
+
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.revwalk.RevCommit;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
 import me.sheimi.android.activities.SheimiFragmentActivity;
@@ -10,31 +34,6 @@ import me.sheimi.sgit.R;
 import me.sheimi.sgit.database.models.Repo;
 import me.sheimi.sgit.repo.tasks.repo.CommitDiffTask;
 import me.sheimi.sgit.repo.tasks.repo.CommitDiffTask.CommitDiffResult;
-
-import org.eclipse.jgit.diff.DiffEntry;
-
-import android.content.Context;
-import android.graphics.Color;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.webkit.JavascriptInterface;
-import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.widget.ProgressBar;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.lib.PersonIdent;
-import android.widget.ShareActionProvider;
-import android.content.Intent;
-import android.net.Uri;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 
 public class CommitDiffActivity extends SheimiFragmentActivity {
 
@@ -78,14 +77,14 @@ public class CommitDiffActivity extends SheimiFragmentActivity {
     private void loadFileContent() {
         mDiffContent.addJavascriptInterface(new CodeLoader(), JS_INF);
         mDiffContent.loadDataWithBaseURL("file:///android_asset/", HTML_TMPL,
-                "text/html", "utf-8", null);
+            "text/html", "utf-8", null);
         WebSettings webSettings = mDiffContent.getSettings();
         webSettings.setJavaScriptEnabled(true);
         mDiffContent.setWebChromeClient(new WebChromeClient() {
             public void onConsoleMessage(String message, int lineNumber,
                                          String sourceID) {
                 Log.d("MyApplication", message + " -- From line " + lineNumber
-                        + " of " + sourceID);
+                    + " of " + sourceID);
             }
 
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -96,7 +95,10 @@ public class CommitDiffActivity extends SheimiFragmentActivity {
     }
 
     private void setupActionBar() {
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override
@@ -104,7 +106,8 @@ public class CommitDiffActivity extends SheimiFragmentActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.diff_commits, menu);
         MenuItem item = menu.findItem(R.id.action_share_diff);
-        ShareActionProvider shareActionProvider = (ShareActionProvider) item.getActionProvider();
+
+        ShareActionProvider shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(item);
         final Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
         shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         Uri futurePathName = Uri.fromFile(sharedDiffPathName());
@@ -112,7 +115,7 @@ public class CommitDiffActivity extends SheimiFragmentActivity {
         shareIntent.setData(futurePathName);
         shareIntent.setType("text/x-patch");
 
-        shareActionProvider.setOnShareTargetSelectedListener(new ShareActionProvider.OnShareTargetSelectedListener () {
+        shareActionProvider.setOnShareTargetSelectedListener(new ShareActionProvider.OnShareTargetSelectedListener() {
             public boolean onShareTargetSelected(ShareActionProvider source, Intent intent) {
                 try {
                     File diff = sharedDiffPathName();
@@ -133,14 +136,14 @@ public class CommitDiffActivity extends SheimiFragmentActivity {
         committer = mCommit.getCommitterIdent();
         author = mCommit.getAuthorIdent();
         return "commit " + mNewCommit + "\n"
-                + "Author:     " + author.getName() + " <" + author.getEmailAddress() + ">\n"
-                + "AuthorDate: " + author.getWhen() + "\n"
-                + "Commit:     " + committer.getName() + " <" + committer.getEmailAddress() + ">\n"
-                + "CommitDate: " + committer.getWhen() + "\n";
+            + "Author:     " + author.getName() + " <" + author.getEmailAddress() + ">\n"
+            + "AuthorDate: " + author.getWhen() + "\n"
+            + "Commit:     " + committer.getName() + " <" + committer.getEmailAddress() + ">\n"
+            + "CommitDate: " + committer.getWhen() + "\n";
     }
 
     private void saveDiff(OutputStream fos) throws IOException {
-	    /* FIXME: LOCK!!! */
+        /* FIXME: LOCK!!! */
         if (mCommit != null) {
             String message;
             fos.write(formatCommitInfo().getBytes());
@@ -184,8 +187,8 @@ public class CommitDiffActivity extends SheimiFragmentActivity {
                 return true;
             case R.id.action_save_diff:
                 Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
-                        .setType("text/x-patch")
-                        .putExtra(Intent.EXTRA_TITLE, Repo.getCommitDisplayName(mNewCommit) + ".diff");
+                    .setType("text/x-patch")
+                    .putExtra(Intent.EXTRA_TITLE, Repo.getCommitDisplayName(mNewCommit) + ".diff");
 
                 startActivityForResult(intent, REQUEST_SAVE_DIFF);
                 return true;
@@ -246,7 +249,7 @@ public class CommitDiffActivity extends SheimiFragmentActivity {
         public void getDiffEntries() {
             String oldCommit = mOldCommit != null ? mOldCommit : (mNewCommit + "^");
             CommitDiffTask diffTask = new CommitDiffTask(mRepo, oldCommit,
-                    mNewCommit, new CommitDiffResult() {
+                mNewCommit, new CommitDiffResult() {
                 @Override
                 public void pushResult(List<DiffEntry> diffEntries,
                                        List<String> diffStrs, RevCommit commit) {
@@ -272,12 +275,12 @@ public class CommitDiffActivity extends SheimiFragmentActivity {
     }
 
     private static final String HTML_TMPL = "<!doctype html>"
-            + "<head>"
-            + " <script src=\"js/jquery.js\"></script>"
-            + " <script src=\"js/highlight.pack.js\"></script>"
-            + " <script src=\"js/local_commits_diff.js\"></script>"
-            + " <link type=\"text/css\" rel=\"stylesheet\" href=\"css/rainbow.css\" />"
-            + " <link type=\"text/css\" rel=\"stylesheet\" href=\"css/local_commits_diff.css\" />"
-            + "</head><body></body>";
+        + "<head>"
+        + " <script src=\"js/jquery.js\"></script>"
+        + " <script src=\"js/highlight.pack.js\"></script>"
+        + " <script src=\"js/local_commits_diff.js\"></script>"
+        + " <link type=\"text/css\" rel=\"stylesheet\" href=\"css/rainbow.css\" />"
+        + " <link type=\"text/css\" rel=\"stylesheet\" href=\"css/local_commits_diff.css\" />"
+        + "</head><body></body>";
 
 }

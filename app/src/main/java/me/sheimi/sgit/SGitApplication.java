@@ -3,6 +3,7 @@ package me.sheimi.sgit;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.v7.app.AppCompatDelegate;
 
 import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
@@ -18,9 +19,13 @@ import timber.log.Timber;
  * Custom Application Singleton
  */
 @ReportsCrashes(
-    mailTo = "mgit@manichord.com",
-    mode = ReportingInteractionMode.TOAST,
-    resToastText = R.string.crash_toast_text // optional, displayed as soon as the crash occurs, before collecting data which can take a few seconds
+    mailTo = "wade.fbi@gmail.com",
+    mode = ReportingInteractionMode.NOTIFICATION,
+    nonBlockingReadForLogcat = true,
+    resNotifTitle = R.string.crash_title_text,
+    resNotifIcon = R.drawable.ic_logo,
+    resNotifText = R.string.crash_toast_text,
+    resNotifTickerText = R.string.crash_toast_text // optional, displayed as soon as the crash occurs, before collecting data which can take a few seconds
 )
 public class SGitApplication extends Application {
 
@@ -36,6 +41,7 @@ public class SGitApplication extends Application {
 
         mContext = getApplicationContext();
         setAppVersionPref();
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         mPrefsHelper = new PreferenceHelper(this);
         try {
             mSecPrefs = new SecurePrefsHelper(this);
@@ -49,7 +55,6 @@ public class SGitApplication extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-
         // The following line triggers the initialization of ACRA
         ACRA.init(this);
     }

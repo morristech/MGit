@@ -1,12 +1,14 @@
 package me.sheimi.sgit.activities;
 
-import android.app.ActionBar;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.SearchView;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,7 +20,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.SearchView;
 import android.widget.TextView;
 
 import me.sheimi.android.activities.SheimiFragmentActivity;
@@ -67,21 +68,30 @@ public class RepoDetailActivity extends SheimiFragmentActivity {
     private int mSelectedTab;
 
     @Override
-    protected void onActivityResult (int requestCode, int resultCode, Intent data) {
-	switch (requestCode) {
-	case BRANCH_CHOOSE_ACTIVITY:
-	    String branchName = mRepo.getBranchName();
-	    if (branchName == null) {
-		showToastMessage(R.string.error_something_wrong);
-		return;
-	    }
-	    reset(branchName);
-	    break;
-	}
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (Activity.RESULT_OK == resultCode && data != null) {
+
+            switch (requestCode) {
+
+                case BRANCH_CHOOSE_ACTIVITY:
+                    if (mRepo != null) {
+
+                        String branchName = mRepo.getBranchName();
+                        if (branchName == null) {
+                            showToastMessage(R.string.error_something_wrong);
+                            return;
+                        }
+                        reset(branchName);
+                    }
+                    break;
+            }
+        }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         mRepo = (Repo) getIntent().getSerializableExtra(Repo.TAG);
         // aweful hack! workaround for null repo when returning from BranchChooser, but going to
@@ -103,9 +113,9 @@ public class RepoDetailActivity extends SheimiFragmentActivity {
         mCommitNameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-		Intent intent = new Intent(RepoDetailActivity.this, BranchChooserActivity.class);
-		intent.putExtra(Repo.TAG, mRepo);
-		startActivityForResult(intent, BRANCH_CHOOSE_ACTIVITY);
+                Intent intent = new Intent(RepoDetailActivity.this, BranchChooserActivity.class);
+                intent.putExtra(Repo.TAG, mRepo);
+                startActivityForResult(intent, BRANCH_CHOOSE_ACTIVITY);
             }
         });
         String branchName = mRepo.getBranchName();
@@ -124,10 +134,11 @@ public class RepoDetailActivity extends SheimiFragmentActivity {
     }
 
     private void setupViewPager() {
+
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mTabItemPagerAdapter = new TabItemPagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(mTabItemPagerAdapter);
-        mViewPager.setOnPageChangeListener(mTabItemPagerAdapter);
+        mViewPager.addOnPageChangeListener(mTabItemPagerAdapter);
     }
 
     private void setupDrawer() {
@@ -143,24 +154,31 @@ public class RepoDetailActivity extends SheimiFragmentActivity {
         mPullProgressContainer = findViewById(R.id.pullProgressContainer);
         mPullProgressContainer.setVisibility(View.GONE);
         mPullProgressBar = (ProgressBar) mPullProgressContainer
-                .findViewById(R.id.pullProgress);
+            .findViewById(R.id.pullProgress);
         mPullMsg = (TextView) mPullProgressContainer.findViewById(R.id.pullMsg);
         mPullLeftHint = (TextView) mPullProgressContainer
-                .findViewById(R.id.leftHint);
+            .findViewById(R.id.leftHint);
         mPullRightHint = (TextView) mPullProgressContainer
-                .findViewById(R.id.rightHint);
+            .findViewById(R.id.rightHint);
     }
 
     private void setupActionBar() {
-        mActionBar = getActionBar();
-        mActionBar.setDisplayShowTitleEnabled(true);
-        mActionBar.setDisplayHomeAsUpEnabled(true);
+        mActionBar = getSupportActionBar();
+        if (mActionBar != null) {
+
+            mActionBar.setDisplayShowTitleEnabled(true);
+            mActionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     private void createFragments() {
-        mFilesFragment = FilesFragment.newInstance(mRepo);
-        mCommitsFragment = CommitsFragment.newInstance(mRepo, null);
-        mStatusFragment = StatusFragment.newInstance(mRepo);
+
+        if (mRepo != null) {
+
+            mFilesFragment = FilesFragment.newInstance(mRepo);
+            mCommitsFragment = CommitsFragment.newInstance(mRepo, null);
+            mStatusFragment = StatusFragment.newInstance(mRepo);
+        }
     }
 
     private void resetCommitButtonName(String commitName) {
@@ -214,12 +232,14 @@ public class RepoDetailActivity extends SheimiFragmentActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
         getMenuInflater().inflate(R.menu.repo_detail, menu);
         mSearchItem = menu.findItem(R.id.action_search);
         mSearchItem.setOnActionExpandListener(mTabItemPagerAdapter);
         mSearchItem.setVisible(mSelectedTab == COMMITS_FRAGMENT_INDEX);
         SearchView searchView = (SearchView) mSearchItem.getActionView();
         if (searchView != null) {
+
             searchView.setIconifiedByDefault(true);
             searchView.setOnQueryTextListener(mTabItemPagerAdapter);
         }
@@ -232,8 +252,7 @@ public class RepoDetailActivity extends SheimiFragmentActivity {
             case KeyEvent.KEYCODE_BACK:
             case KeyEvent.KEYCODE_DEL:
                 int position = mViewPager.getCurrentItem();
-                OnBackClickListener onBackClickListener = mTabItemPagerAdapter
-                        .getItem(position).getOnBackClickListener();
+                OnBackClickListener onBackClickListener = mTabItemPagerAdapter.getItem(position).getOnBackClickListener();
                 if (onBackClickListener != null) {
                     if (onBackClickListener.onClick())
                         return true;
@@ -280,7 +299,7 @@ public class RepoDetailActivity extends SheimiFragmentActivity {
         public void onPreExecute() {
             mPullMsg.setText(mInitMsg);
             Animation anim = AnimationUtils.loadAnimation(
-                    RepoDetailActivity.this, R.anim.fade_in);
+                RepoDetailActivity.this, R.anim.fade_in);
             mPullProgressContainer.setAnimation(anim);
             mPullProgressContainer.setVisibility(View.VISIBLE);
             mPullLeftHint.setText(R.string.progress_left_init);
@@ -297,8 +316,7 @@ public class RepoDetailActivity extends SheimiFragmentActivity {
 
         @Override
         public void onPostExecute(Boolean isSuccess) {
-            Animation anim = AnimationUtils.loadAnimation(
-                    RepoDetailActivity.this, R.anim.fade_out);
+            Animation anim = AnimationUtils.loadAnimation(RepoDetailActivity.this, R.anim.fade_out);
             mPullProgressContainer.setAnimation(anim);
             mPullProgressContainer.setVisibility(View.GONE);
             reset();
@@ -318,8 +336,15 @@ public class RepoDetailActivity extends SheimiFragmentActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         switch (item.getItemId()) {
             case android.R.id.home:
+                int position = mViewPager.getCurrentItem();
+                OnBackClickListener onBackClickListener = mTabItemPagerAdapter.getItem(position).getOnBackClickListener();
+                if (onBackClickListener != null) {
+                    if (onBackClickListener.onClick())
+                        return true;
+                }
                 finish();
                 return true;
             case R.id.action_toggle_drawer:
@@ -342,6 +367,21 @@ public class RepoDetailActivity extends SheimiFragmentActivity {
         mCommitsFragment.enterDiffActionMode();
     }
 
+    @Override
+    public void onBackPressed() {
+
+        int position = mViewPager.getCurrentItem();
+        OnBackClickListener onBackClickListener = mTabItemPagerAdapter.getItem(position).getOnBackClickListener();
+        if (onBackClickListener != null) {
+
+            if (!onBackClickListener.onClick()) {
+                finish();
+            }
+        } else {
+            finish();
+        }
+    }
+
     private void repoInit() {
         mRepo.updateLatestCommitInfo();
         mRepo.getRemotes();
@@ -349,8 +389,8 @@ public class RepoDetailActivity extends SheimiFragmentActivity {
 
     class TabItemPagerAdapter extends FragmentPagerAdapter implements ViewPager.OnPageChangeListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
 
-        private final int[] PAGE_TITLE = { R.string.tab_files_label,
-                R.string.tab_commits_label, R.string.tab_status_label };
+        private final int[] PAGE_TITLE = {R.string.tab_files_label,
+            R.string.tab_commits_label, R.string.tab_status_label};
 
         public TabItemPagerAdapter(FragmentManager fm) {
             super(fm);

@@ -8,10 +8,11 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.SearchView;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.SearchView;
 
 import java.io.File;
 
@@ -30,50 +31,56 @@ public class ViewFileActivity extends SheimiFragmentActivity {
     public static String TAG_MODE = "mode";
     public static short TAG_MODE_NORMAL = 0;
     public static short TAG_MODE_SSH_KEY = 1;
-    private CommitsFragment mCommitsFragment;
-    private short mActivityMode = TAG_MODE_NORMAL;
+    private CommitsFragment commitsFragment;
+    private short activityMode = TAG_MODE_NORMAL;
     private static final int FILE_FRAGMENT_INDEX = 0;
     private static final int COMMITS_FRAGMENT_INDEX = 1;
-    private ViewPager mViewPager;
-    private Repo mRepo;
-    private TabItemPagerAdapter mTabItemPagerAdapter;
-    private ViewFileFragment mFileFragment;
-    private int mCurrentTab;
+    private ViewPager viewPager;
+    private Repo repo;
+    private TabItemPagerAdapter tabItemPagerAdapter;
+    private ViewFileFragment fileFragment;
+    private int currentTab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_file);
-        mRepo = (Repo) getIntent().getSerializableExtra(Repo.TAG);
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-        mTabItemPagerAdapter = new TabItemPagerAdapter(getSupportFragmentManager());
-        mViewPager.setAdapter(mTabItemPagerAdapter);
-        mViewPager.setOnPageChangeListener(mTabItemPagerAdapter);
+        repo = (Repo) getIntent().getSerializableExtra(Repo.TAG);
+        viewPager = (ViewPager) findViewById(R.id.pager);
+        tabItemPagerAdapter = new TabItemPagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(tabItemPagerAdapter);
+        viewPager.addOnPageChangeListener(tabItemPagerAdapter);
         Bundle b = new Bundle();
         Bundle extras = getIntent().getExtras();
         String fileName = extras.getString(TAG_FILE_NAME);
-	    mActivityMode = extras.getShort(TAG_MODE, TAG_MODE_NORMAL);
+        activityMode = extras.getShort(TAG_MODE, TAG_MODE_NORMAL);
         b.putString(TAG_FILE_NAME, fileName);
-        if (mRepo != null) {
-            b.putSerializable(Repo.TAG, mRepo);
-            mCommitsFragment = CommitsFragment.newInstance(mRepo, FsUtils.getRelativePath(new File(fileName), mRepo.getDir()));
+        if (repo != null) {
+
+            b.putSerializable(Repo.TAG, repo);
+            commitsFragment = CommitsFragment.newInstance(repo, FsUtils.getRelativePath(new File(fileName), repo.getDir()));
         }
-        if (mRepo == null) {
+        if (repo == null) {
             PagerTitleStrip strip = (PagerTitleStrip) findViewById(R.id.pager_title_strip);
             strip.setVisibility(View.GONE);
         }
-        mFileFragment = new ViewFileFragment();
-        mFileFragment.setArguments(b);
-        mActivityMode = extras.getShort(TAG_MODE, TAG_MODE_NORMAL);
-        b.putShort(TAG_MODE, mActivityMode);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        setTitle(new File(fileName).getName());
+        fileFragment = new ViewFileFragment();
+        fileFragment.setArguments(b);
+        activityMode = extras.getShort(TAG_MODE, TAG_MODE_NORMAL);
+        b.putShort(TAG_MODE, activityMode);
+        if (!TextUtils.isEmpty(fileName)) {
+            setTitle(new File(fileName).getName());
+        }
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
 
     class TabItemPagerAdapter extends FragmentPagerAdapter implements ViewPager.OnPageChangeListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
 
-        private final int[] PAGE_TITLE = { R.string.tab_file_label, R.string.tab_commits_label };
+        private final int[] PAGE_TITLE = {R.string.tab_file_label, R.string.tab_commits_label};
 
         public TabItemPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -83,11 +90,11 @@ public class ViewFileActivity extends SheimiFragmentActivity {
         public BaseFragment getItem(int position) {
             switch (position) {
                 case FILE_FRAGMENT_INDEX:
-                    return mFileFragment;
+                    return fileFragment;
                 case COMMITS_FRAGMENT_INDEX:
-                    return mCommitsFragment;
+                    return commitsFragment;
             }
-            return mFileFragment;
+            return fileFragment;
         }
 
         @Override
@@ -97,7 +104,8 @@ public class ViewFileActivity extends SheimiFragmentActivity {
 
         @Override
         public int getCount() {
-            if (mRepo == null) {
+
+            if (repo == null) {
                 return 1;
             }
             return PAGE_TITLE.length;
@@ -105,12 +113,11 @@ public class ViewFileActivity extends SheimiFragmentActivity {
 
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
         }
 
         @Override
         public void onPageSelected(int position) {
-            mCurrentTab = position;
+            currentTab = position;
             invalidateOptionsMenu();
         }
 
@@ -121,9 +128,10 @@ public class ViewFileActivity extends SheimiFragmentActivity {
 
         @Override
         public boolean onQueryTextSubmit(String query) {
-            switch (mViewPager.getCurrentItem()) {
+
+            switch (viewPager.getCurrentItem()) {
                 case COMMITS_FRAGMENT_INDEX:
-                    mCommitsFragment.setFilter(query);
+                    commitsFragment.setFilter(query);
                     break;
             }
             return true;
@@ -131,9 +139,10 @@ public class ViewFileActivity extends SheimiFragmentActivity {
 
         @Override
         public boolean onQueryTextChange(String query) {
-            switch (mViewPager.getCurrentItem()) {
+
+            switch (viewPager.getCurrentItem()) {
                 case COMMITS_FRAGMENT_INDEX:
-                    mCommitsFragment.setFilter(query);
+                    commitsFragment.setFilter(query);
                     break;
             }
             return true;
@@ -146,9 +155,10 @@ public class ViewFileActivity extends SheimiFragmentActivity {
 
         @Override
         public boolean onMenuItemActionCollapse(MenuItem menuItem) {
-            switch (mViewPager.getCurrentItem()) {
+
+            switch (viewPager.getCurrentItem()) {
                 case COMMITS_FRAGMENT_INDEX:
-                    mCommitsFragment.setFilter(null);
+                    commitsFragment.setFilter(null);
                     break;
             }
             return true;
@@ -157,7 +167,8 @@ public class ViewFileActivity extends SheimiFragmentActivity {
     }
 
     private void setSaveStatus(MenuItem mi) {
-        if (mFileFragment.getEditMode()) {
+
+        if (fileFragment.getEditMode()) {
             mi.setIcon(R.drawable.ic_action_save);
             mi.setTitle(R.string.action_edit_save);
         } else {
@@ -170,31 +181,32 @@ public class ViewFileActivity extends SheimiFragmentActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.view_file, menu);
-        if (mActivityMode == TAG_MODE_SSH_KEY) {
+        if (activityMode == TAG_MODE_SSH_KEY) {
             menu.removeItem(R.id.action_edit);
             menu.removeItem(R.id.action_edit_in_other_app);
             menu.removeItem(R.id.action_choose_language);
         } else {
             menu.removeItem(R.id.action_copy_all);
         }
-        if (mActivityMode != TAG_MODE_SSH_KEY) {
+        if (activityMode != TAG_MODE_SSH_KEY) {
             MenuItem mi = menu.findItem(R.id.action_edit);
             setSaveStatus(mi);
-            mi.setVisible(mCurrentTab == FILE_FRAGMENT_INDEX);
+            mi.setVisible(currentTab == FILE_FRAGMENT_INDEX);
             mi = menu.findItem(R.id.action_edit_in_other_app);
-            mi.setVisible(mCurrentTab == FILE_FRAGMENT_INDEX);
+            mi.setVisible(currentTab == FILE_FRAGMENT_INDEX);
             mi = menu.findItem(R.id.action_choose_language);
-            mi.setVisible(mCurrentTab == FILE_FRAGMENT_INDEX);
+            mi.setVisible(currentTab == FILE_FRAGMENT_INDEX);
         }
-        if (mRepo != null) {
+        if (repo != null) {
             MenuItem searchItem = menu.findItem(R.id.action_search);
-            searchItem.setOnActionExpandListener(mTabItemPagerAdapter);
+            searchItem.setOnActionExpandListener(tabItemPagerAdapter);
             SearchView searchView = (SearchView) searchItem.getActionView();
             if (searchView != null) {
+
                 searchView.setIconifiedByDefault(true);
-                searchView.setOnQueryTextListener(mTabItemPagerAdapter);
+                searchView.setOnQueryTextListener(tabItemPagerAdapter);
             }
-            searchItem.setVisible(mCurrentTab == COMMITS_FRAGMENT_INDEX);
+            searchItem.setVisible(currentTab == COMMITS_FRAGMENT_INDEX);
         } else {
             menu.removeItem(R.id.action_search);
         }
@@ -204,52 +216,61 @@ public class ViewFileActivity extends SheimiFragmentActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         switch (item.getItemId()) {
+
             case android.R.id.home:
                 finish();
                 return true;
             case R.id.action_edit_in_other_app:
-                if (mActivityMode == TAG_MODE_SSH_KEY) {
+                if (activityMode == TAG_MODE_SSH_KEY) {
                     return true;
                 }
-                Uri uri = Uri.fromFile(mFileFragment.getFile());
-                String mimeType = FsUtils.getMimeType(uri.toString());
-                Intent viewIntent = new Intent(Intent.ACTION_VIEW);
-                Intent editIntent = new Intent(Intent.ACTION_EDIT);
-                viewIntent.setDataAndType(uri, mimeType);
-                editIntent.setDataAndType(uri, mimeType);
-                try {
-                    Intent chooserIntent = Intent.createChooser(viewIntent,
-                            getString(R.string.label_choose_app_to_edit));
-                    chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { editIntent });
-                    startActivity(chooserIntent);
-                    forwardTransition();
-                } catch (ActivityNotFoundException e) {
-                    showMessageDialog(R.string.dialog_error_title, getString(R.string.error_no_edit_app));
+                if (fileFragment != null && fileFragment.getFile() != null) {
+
+                    Uri uri = Uri.fromFile(fileFragment.getFile());
+                    String mimeType = getContentResolver().getType(uri);
+                    if (TextUtils.isEmpty(mimeType)) {
+                        mimeType = FsUtils.getMimeType(uri.toString());
+                    }
+                    Intent viewIntent = new Intent(Intent.ACTION_VIEW);
+                    Intent editIntent = new Intent(Intent.ACTION_EDIT);
+                    viewIntent.setDataAndType(uri, mimeType);
+                    editIntent.setDataAndType(uri, mimeType);
+                    try {
+                        Intent chooserIntent = Intent.createChooser(viewIntent, getString(R.string.label_choose_app_to_edit));
+                        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{editIntent});
+                        startActivity(chooserIntent);
+                        forwardTransition();
+                    } catch (ActivityNotFoundException e) {
+                        showMessageDialog(R.string.dialog_error_title, getString(R.string.error_no_edit_app));
+                    }
                 }
                 break;
             case R.id.action_edit:
-                if (mActivityMode == TAG_MODE_SSH_KEY) {
+                if (activityMode == TAG_MODE_SSH_KEY) {
                     return true;
                 }
-                mFileFragment.setEditMode(!mFileFragment.getEditMode());
+                fileFragment.setEditMode(!fileFragment.getEditMode());
                 setSaveStatus(item);
                 return true;
             case R.id.action_choose_language:
-                if (mActivityMode == TAG_MODE_SSH_KEY) {
+                if (activityMode == TAG_MODE_SSH_KEY) {
                     return true;
                 }
                 ChooseLanguageDialog cld = new ChooseLanguageDialog();
                 cld.show(getSupportFragmentManager(), "choose language");
                 return true;
             case R.id.action_copy_all:
-                mFileFragment.copyAll();
+                fileFragment.copyAll();
                 return true;
+
         }
         return super.onOptionsItemSelected(item);
     }
 
     public void setLanguage(String lang) {
-        mFileFragment.setLanguage(lang);
+        fileFragment.setLanguage(lang);
     }
+
 }

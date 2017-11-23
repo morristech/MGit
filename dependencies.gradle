@@ -4,8 +4,8 @@ ext.versions = [
 
         minSdk                  : 16,
         targetSdk               : 26,
-        compileSdk              : 26,
-        buildTools              : '26.0.2',
+        compileSdk              : 27,
+        buildTools              : '27.0.0',
 
         androidGradlePlugin     : '3.0.0',
         dexcountPlugin          : '0.6.1',
@@ -13,7 +13,7 @@ ext.versions = [
 
         dagger                  : '2.12',
 
-        supportLibs             : '25.1.0',
+        supportLibs             : '27.0.0',
         timber                  : '4.5.1',
 
         jcraft                  : '0.1.5.4',
@@ -71,7 +71,7 @@ ext.libraries = [
         robolectricShadowSupport    : "org.robolectric:shadows-support-v4:$versions.robolectricShadowSupport",
 ]
 
-def addRepos(RepositoryHandler handler) {
+static def addRepos(RepositoryHandler handler) {
 //    handler.google()
     handler.jcenter()
     handler.maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }

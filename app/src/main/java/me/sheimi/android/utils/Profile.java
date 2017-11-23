@@ -3,10 +3,9 @@ package me.sheimi.android.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
-import android.util.Log;
+import android.support.annotation.NonNull;
 
 import me.sheimi.sgit.R;
-import me.sheimi.sgit.SGitApplication;
 import me.sheimi.sgit.database.models.Repo;
 
 /**
@@ -20,21 +19,37 @@ public class Profile {
     private static Repo sLastFailRepo;
     private static int sTheme = -1;
 
-    private static SharedPreferences getProfileSharedPreference(Context context) {
+    private static class LazyHolder {
+        private static final Profile INSTANCE = new Profile();
+    }
+
+    private Profile() {
+    }
+
+    public static Profile getInstance() {
+        return LazyHolder.INSTANCE;
+    }
+
+    private static SharedPreferences getProfileSharedPreference(@NonNull Context context) {
+
         if (sSharedPreference == null) {
-            sSharedPreference = context.getSharedPreferences(
-                                    context.getString(R.string.preference_file_key),
-                                    Context.MODE_PRIVATE);
+            synchronized (Profile.class) {
+                if (sSharedPreference == null) {
+                    sSharedPreference = context.getSharedPreferences(context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+                }
+            }
         }
         return sSharedPreference;
     }
 
     public static String getUsername(Context context) {
+
         String userNamePrefKey = context.getString(R.string.pref_key_git_user_name);
         return getProfileSharedPreference(context).getString(userNamePrefKey, "");
     }
 
     public static String getEmail(Context context) {
+
         String userEmailPrefKey = context.getString(R.string.pref_key_git_user_email);
         return getProfileSharedPreference(context).getString(userEmailPrefKey, "");
     }
@@ -48,6 +63,7 @@ public class Profile {
     }
 
     public static void setLastCloneFailed(Repo repo) {
+
         sHasLastCloneFail = true;
         sLastFailRepo = repo;
     }
@@ -62,11 +78,13 @@ public class Profile {
     }
 
     public static int getThemeResource(Context context) {
+
         final int[] themes = { R.style.AppTheme, R.style.DarkAppTheme };
         return themes[getTheme(context)];
     }
 
     public static String getCodeMirrorTheme(Context context) {
+
         final String[] themes = context.getResources().getStringArray(R.array.codemirror_theme_names);
         return themes[getTheme(context)];
     }

@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.webkit.MimeTypeMap;
 
 /**
@@ -23,15 +24,15 @@ import android.webkit.MimeTypeMap;
  */
 public class FsUtils {
 
-    public static final SimpleDateFormat TIMESTAMP_FORMATTER = new SimpleDateFormat(
-            "yyyyMMdd_HHmmss", Locale.getDefault());
+    public static final SimpleDateFormat TIMESTAMP_FORMATTER = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
     public static final String TEMP_DIR = "temp";
     private static final String LOGTAG = FsUtils.class.getSimpleName();
 
     private FsUtils() {
     }
 
-    public static File createTempFile(String subfix) throws IOException {
+    public static File createTempFile(@NonNull String subfix) throws IOException {
+
         File dir = getExternalDir(TEMP_DIR);
         String fileName = TIMESTAMP_FORMATTER.format(new Date());
         File file = File.createTempFile(fileName, subfix, dir);
@@ -76,6 +77,7 @@ public class FsUtils {
      * @return
      */
     public static File getExternalDir(String dirname, boolean isCreate, boolean isExternal) {
+
         File mDir = new File(getAppDir(isExternal), dirname);
         if (!mDir.exists() && isCreate) {
             mDir.mkdir();
@@ -90,6 +92,7 @@ public class FsUtils {
      * @return
      */
     public static File getAppDir(boolean isExternal) {
+
         SheimiFragmentActivity activeActivity = BasicFunctions.getActiveActivity();
         if (isExternal) {
             return activeActivity.getExternalFilesDir(null);
@@ -99,9 +102,9 @@ public class FsUtils {
     }
 
     public static String getMimeType(String url) {
+
         String type = null;
-        String extension = MimeTypeMap.getFileExtensionFromUrl(url
-                .toLowerCase(Locale.getDefault()));
+        String extension = MimeTypeMap.getFileExtensionFromUrl(url.toLowerCase(Locale.getDefault()));
         if (extension != null) {
             MimeTypeMap mime = MimeTypeMap.getSingleton();
             type = mime.getMimeTypeFromExtension(extension);
@@ -121,6 +124,7 @@ public class FsUtils {
     }
 
     public static void openFile(File file, String mimeType) {
+
         Intent intent = new Intent();
         intent.setAction(android.content.Intent.ACTION_VIEW);
         Uri uri = Uri.fromFile(file);
@@ -128,11 +132,9 @@ public class FsUtils {
             mimeType = getMimeType(uri.toString());
         }
         intent.setDataAndType(uri, mimeType);
-        BasicFunctions.getActiveActivity().startActivity(
-                Intent.createChooser(
-                        intent,
-                        BasicFunctions.getActiveActivity().getString(
-                                R.string.label_choose_app_to_open)));
+        if (BasicFunctions.getActiveActivity() != null) {
+            BasicFunctions.getActiveActivity().startActivity(Intent.createChooser(intent, BasicFunctions.getActiveActivity().getString(R.string.label_choose_app_to_open)));
+        }
     }
 
     public static void deleteFile(File file) {
@@ -142,6 +144,7 @@ public class FsUtils {
     }
 
     private static void deleteFileInner(File file) {
+
         if (!file.isDirectory()) {
             file.delete();
             return;
@@ -173,9 +176,9 @@ public class FsUtils {
     }
 
     public static boolean renameDirectory(File dir, String name) {
+
         String newDirPath = dir.getParent() + File.separator + name;
         File newDirFile = new File(newDirPath);
-
         return dir.renameTo(newDirFile);
     }
 

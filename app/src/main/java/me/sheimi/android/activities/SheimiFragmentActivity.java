@@ -28,8 +28,8 @@ import me.sheimi.sgit.dialogs.DummyDialogListener;
 
 public class SheimiFragmentActivity extends AppCompatActivity {
 
-    public static interface OnBackClickListener {
-        public boolean onClick();
+    public interface OnBackClickListener {
+        boolean onClick();
     }
 
     @Override
@@ -55,6 +55,7 @@ public class SheimiFragmentActivity extends AppCompatActivity {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             finish();
             return true;
@@ -128,7 +129,7 @@ public class SheimiFragmentActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
         View layout = inflater.inflate(R.layout.dialog_edit_text, null);
-        final EditText editText = (EditText) layout.findViewById(R.id.editText);
+        final EditText editText = layout.findViewById(R.id.editText);
         editText.setHint(hint);
         builder.setTitle(title)
                 .setView(layout)
@@ -170,9 +171,9 @@ public class SheimiFragmentActivity extends AppCompatActivity {
         LayoutInflater inflater = getLayoutInflater();
         View layout = inflater.inflate(R.layout.dialog_prompt_for_password,
                 null);
-        final EditText username = (EditText) layout.findViewById(R.id.username);
-        final EditText password = (EditText) layout.findViewById(R.id.password);
-        final CheckBox checkBox = (CheckBox) layout
+        final EditText username = layout.findViewById(R.id.username);
+        final EditText password = layout.findViewById(R.id.password);
+        final CheckBox checkBox = layout
                 .findViewById(R.id.savePassword);
         if (errorInfo == null) {
             errorInfo = getString(R.string.dialog_prompt_for_password_title);
@@ -199,11 +200,11 @@ public class SheimiFragmentActivity extends AppCompatActivity {
                         }).show();
     }
 
-    public static interface onOptionDialogClicked {
+    public interface onOptionDialogClicked {
         void onClicked();
     }
 
-    public static interface OnEditTextDialogClicked {
+    public interface OnEditTextDialogClicked {
         void onClicked(String text);
     }
 
@@ -211,7 +212,7 @@ public class SheimiFragmentActivity extends AppCompatActivity {
      * Callback interface to receive credentials entered via UI by the user after being prompted
      * in the UI in order to connect to a remote repo
      */
-    public static interface OnPasswordEntered {
+    public interface OnPasswordEntered {
 
         /**
          * Handle retrying a Remote Repo task after user supplies requested credentials

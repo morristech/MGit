@@ -1,46 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:orientation="vertical"
               android:padding="@dimen/general_padding">
 
     <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/default_text"
-            android:id="@+id/pullMsg"
-            android:textSize="@dimen/file_list_header_msg_size"
-            android:textColor="@color/general_gray_text_color"/>
+        android:id="@+id/pullMsg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/default_text"
+        android:textColor="@color/general_gray_text_color"
+        android:textSize="@dimen/file_list_header_msg_size"/>
 
     <ProgressBar
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/pullProgress" />
+        android:id="@+id/pullProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
     <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
         <TextView
-                style="@style/items_with_same_width"
-                android:layout_height="wrap_content"
-                android:text="@string/default_text"
-                android:id="@+id/leftHint"
-                android:textSize="@dimen/file_list_header_hint_size"
-                android:textColor="@color/general_gray_text_color"
-                android:gravity="left"/>
+            android:id="@+id/leftHint"
+            style="@style/items_with_same_width"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:text="@string/default_text"
+            android:textColor="@color/general_gray_text_color"
+            android:textSize="@dimen/file_list_header_hint_size"/>
 
         <TextView
-                style="@style/items_with_same_width"
-                android:layout_height="wrap_content"
-                android:text="@string/default_text"
-                android:id="@+id/rightHint"
-                android:textSize="@dimen/file_list_header_hint_size"
-                android:textColor="@color/general_gray_text_color"
-                android:gravity="right"/>
+            android:id="@+id/rightHint"
+            style="@style/items_with_same_width"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:text="@string/default_text"
+            android:textColor="@color/general_gray_text_color"
+            android:textSize="@dimen/file_list_header_hint_size"/>
 
     </LinearLayout>
+
 </LinearLayout>

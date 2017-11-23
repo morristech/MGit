@@ -30,6 +30,7 @@ public class AvatarDownloader extends BaseImageDownloader {
     }
 
     public AvatarDownloader(Context context, int connectTimeout, int readTimeout) {
+
         super(context, connectTimeout, readTimeout);
         useGravatar = isGravatarEnabled();
     }
@@ -39,9 +40,8 @@ public class AvatarDownloader extends BaseImageDownloader {
      * @return true if the use of Gravatar to retrieve Avatar images is enabled, false otherwise
      */
     protected boolean isGravatarEnabled() {
-        SharedPreferences sharedPreference = context.getSharedPreferences(
-            context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
 
+        SharedPreferences sharedPreference = context.getSharedPreferences( context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         return sharedPreference.getBoolean(context.getString(R.string.pref_key_use_gravatar), true);
     }
 
@@ -58,15 +58,16 @@ public class AvatarDownloader extends BaseImageDownloader {
      */
     @Override
     protected InputStream getStreamFromOtherSource(String imageUri, Object extra) throws IOException {
-        if (imageUri.toLowerCase(Locale.US).startsWith(AVATAR_SCHEME)) {
-            if (!useGravatar)
-                return null;
 
+        if (imageUri.toLowerCase(Locale.US).startsWith(AVATAR_SCHEME)) {
+
+            if (!useGravatar) {
+                return null;
+            }
             String hash = imageUri.substring(AVATAR_SCHEME.length());
             String gravatarUri = String.format(Locale.getDefault(), IMAGE_REQUEST_HASH, hash);
             return getStream(gravatarUri, extra);
         }
-
         return super.getStreamFromOtherSource(imageUri, extra);
     }
 }

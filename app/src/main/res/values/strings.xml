@@ -178,7 +178,8 @@
     <string name="action_add_private_key">Add Private Key</string>
 
     <!-- Crash reporting via ACRA -->
-    <string name="crash_toast_text">MGit error - gathering data to email a crash report</string>
+    <string name="crash_toast_text">MGit Crash - Gathering data to email a crash report</string>
+    <string name="crash_title_text">MGit Crash</string>
 
     <!-- Intent filters -->
     <string name="clone_with_mgit">Clone with MGit</string>
