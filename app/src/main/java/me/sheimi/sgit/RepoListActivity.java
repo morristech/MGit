@@ -83,11 +83,11 @@ public class RepoListActivity extends SheimiFragmentActivity {
                     Intent intent = new Intent(mContext, RepoDetailActivity.class);
                     intent.putExtra(Repo.TAG, repositoriesWithSameRemote.get(0));
                     startActivity(intent);
-                } else {
-
-                    Repo mRepo = Repo.createRepo(repoName, repoUrlBuilder.toString());
+                }
+                else{
+    final String cloningStatus = getString(R.string.cloning);                Repo mRepo = Repo.createRepo(repoName , repoUrlBuilder.toString() , cloningStatus);
                     Boolean isRecursive = true;
-                    CloneTask task = new CloneTask(mRepo, isRecursive, null);
+    	            CloneTask task = new CloneTask(mRepo, true, cloningStatus, null);
                     task.executeTask();
                 }
             }
