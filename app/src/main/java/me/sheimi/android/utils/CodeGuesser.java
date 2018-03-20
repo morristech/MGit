@@ -28,7 +28,7 @@ public class CodeGuesser {
             { "CSS", "text/css", "css" },
             { "Scss", "text/x-scss", "scss" },
             { "Sass", "text/x-sass", "sass" },
-            { "Less", "text/x-x-less", "less" },
+            { "Less", "text/x-x-less", "sass" },
             { "D", "text/x-d", "d" },
             { "Diff", "text/x-diff", "diff", "patch", "rej" },
             { "DTD", "application/xml-dtd" },

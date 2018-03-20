@@ -147,7 +147,7 @@ public class RepoListActivity extends SheimiFragmentActivity {
             return;
         }
         SearchListener searchListener = new SearchListener();
-        MenuItemCompat.setOnActionExpandListener(searchItem, searchListener);
+        searchItem.setOnActionExpandListener(searchListener);
         searchView.setIconifiedByDefault(true);
         searchView.setOnQueryTextListener(searchListener);
     }
@@ -193,8 +193,7 @@ public class RepoListActivity extends SheimiFragmentActivity {
         }
     }
 
-    public class SearchListener implements SearchView.OnQueryTextListener,
-            MenuItemCompat.OnActionExpandListener {
+    public class SearchListener implements SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
 
         @Override
         public boolean onQueryTextSubmit(String s) {

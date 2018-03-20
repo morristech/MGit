@@ -11,7 +11,9 @@ android {
         targetSdkVersion versions.targetSdk
 
         vectorDrawables.useSupportLibrary = true
-
+        def filesAuthorityValue = applicationId + ".shareprovider"
+        buildConfigField "String", "FILES_AUTHORITY", "\"${filesAuthorityValue}\""
+        manifestPlaceholders = [filesAuthority: filesAuthorityValue]
         versionCode 207
         versionName "1.5.4.2"
     }
@@ -34,6 +36,7 @@ dependencies {
     compile libraries.supportAppCompat
     compile libraries.supportDesign
     compile libraries.supportRecyclerView
+    compile libraries.supportExifInterface
 
     compile libraries.timber
 

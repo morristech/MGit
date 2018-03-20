@@ -47,8 +47,7 @@ public class FilesFragment extends RepoDetailFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_files, container, false);
         getRawActivity().setFilesFragment(this);
 
@@ -97,7 +96,7 @@ public class FilesFragment extends RepoDetailFragment {
                             return;
                         }
                         try {
-                            FsUtils.openFile(file);
+                            FsUtils.openFile(getActivity(), file);
                         } catch (ActivityNotFoundException e) {
                             Timber.e(e);
                             ((SheimiFragmentActivity)getActivity()).showMessageDialog(R.string.dialog_error_title,

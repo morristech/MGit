@@ -4,9 +4,9 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.PagerTitleStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.SearchView;
@@ -19,7 +19,9 @@ import java.io.File;
 
 import me.sheimi.android.activities.SheimiFragmentActivity;
 import me.sheimi.android.utils.FsUtils;
+import me.sheimi.android.utils.MimeTypeUtil;
 import me.sheimi.sgit.R;
+import me.sheimi.sgit.RepoListActivity;
 import me.sheimi.sgit.database.models.Repo;
 import me.sheimi.sgit.dialogs.ChooseLanguageDialog;
 import me.sheimi.sgit.fragments.BaseFragment;
@@ -27,6 +29,8 @@ import me.sheimi.sgit.fragments.CommitsFragment;
 import me.sheimi.sgit.fragments.ViewFileFragment;
 
 public class ViewFileActivity extends SheimiFragmentActivity {
+
+    private static final String TAG = "ViewFileActivity";
 
     public static String TAG_FILE_NAME = "file_name";
     public static String TAG_MODE = "mode";
@@ -40,6 +44,7 @@ public class ViewFileActivity extends SheimiFragmentActivity {
     private Repo repo;
     private TabItemPagerAdapter tabItemPagerAdapter;
     private ViewFileFragment fileFragment;
+    private PowerManager.WakeLock wakeLock;
     private int currentTab;
 
     @Override
@@ -76,10 +81,16 @@ public class ViewFileActivity extends SheimiFragmentActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        if (powerManager != null) {
+
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+            wakeLock.setReferenceCounted(false);
+        }
     }
 
 
-    class TabItemPagerAdapter extends FragmentPagerAdapter implements ViewPager.OnPageChangeListener, SearchView.OnQueryTextListener, MenuItemCompat.OnActionExpandListener {
+    class TabItemPagerAdapter extends FragmentPagerAdapter implements ViewPager.OnPageChangeListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
 
         private final int[] PAGE_TITLE = {R.string.tab_file_label, R.string.tab_commits_label};
 
@@ -232,7 +243,8 @@ public class ViewFileActivity extends SheimiFragmentActivity {
                     Uri uri = Uri.fromFile(fileFragment.getFile());
                     String mimeType = getContentResolver().getType(uri);
                     if (TextUtils.isEmpty(mimeType)) {
-                        mimeType = FsUtils.getMimeType(uri.toString());
+                        //mimeType = FsUtils.getMimeType(uri.toString());
+                        mimeType = MimeTypeUtil.getMimeType(uri.toString());
                     }
                     Intent viewIntent = new Intent(Intent.ACTION_VIEW);
                     Intent editIntent = new Intent(Intent.ACTION_EDIT);
@@ -272,6 +284,24 @@ public class ViewFileActivity extends SheimiFragmentActivity {
 
     public void setLanguage(String lang) {
         fileFragment.setLanguage(lang);
+    }
+
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+        if (wakeLock != null && !wakeLock.isHeld()) {
+            wakeLock.acquire();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+
+        if (wakeLock != null && wakeLock.isHeld()) {
+            wakeLock.release();
+        }
+        super.onPause();
     }
 
 }

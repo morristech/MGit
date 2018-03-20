@@ -1,5 +1,18 @@
 package me.sheimi.android.utils;
 
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.content.FileProvider;
+import android.text.TextUtils;
+import android.webkit.MimeTypeMap;
+
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -7,17 +20,8 @@ import java.util.Date;
 import java.util.Locale;
 
 import me.sheimi.android.activities.SheimiFragmentActivity;
+import me.sheimi.sgit.BuildConfig;
 import me.sheimi.sgit.R;
-
-import org.apache.commons.io.FileUtils;
-
-import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.webkit.MimeTypeMap;
 
 /**
  * Created by sheimi on 8/8/13.
@@ -101,12 +105,34 @@ public class FsUtils {
         }
     }
 
-    public static String getMimeType(String url) {
+    /**
+     * To find out the extension of required object in given uri
+     * Solution by http://stackoverflow.com/a/36514823/1171484
+     */
+    public static String getMimeType(@NonNull Context context, @NonNull Uri uri) {
+
+        String extension;
+        //Check uri format to avoid null
+        if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+            //If scheme is a content
+            final MimeTypeMap mime = MimeTypeMap.getSingleton();
+            extension = mime.getExtensionFromMimeType(context.getContentResolver().getType(uri));
+        } else {
+            //If scheme is a File
+            //This will replace white spaces with %20 and also other special characters.
+            // This will avoid returning null values on file name with spaces and special characters.
+            extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(new File(uri.getPath())).toString());
+        }
+        return extension;
+    }
+
+    @Deprecated
+    public static String getMimeType(@NonNull String url) {
 
         String type = null;
         String extension = MimeTypeMap.getFileExtensionFromUrl(url.toLowerCase(Locale.getDefault()));
         if (extension != null) {
-            MimeTypeMap mime = MimeTypeMap.getSingleton();
+            final MimeTypeMap mime = MimeTypeMap.getSingleton();
             type = mime.getMimeTypeFromExtension(extension);
         }
         if (type == null) {
@@ -115,26 +141,30 @@ public class FsUtils {
         return type;
     }
 
-    public static String getMimeType(File file) {
-        return getMimeType(Uri.fromFile(file).toString());
+    public static String getMimeType(@NonNull File file) {
+        //return getMimeType(Uri.fromFile(file).toString());
+        return MimeTypeUtil.getMimeType(file.getPath());
     }
 
-    public static void openFile(File file) {
-        openFile(file, null);
+    public static void openFile(@NonNull Context context, @NonNull File file) {
+        openFile(context, file, MimeTypeUtil.getMimeType(file.getPath()));
     }
 
-    public static void openFile(File file, String mimeType) {
+    public static void openFile(@NonNull Context context, @NonNull File file, @Nullable String mimeType) {
 
+        Uri uri = getUriFromFile(context, file);
+        if (mimeType == null || TextUtils.isEmpty(mimeType)) {
+            mimeType = getMimeType(context, uri);
+        }
         Intent intent = new Intent();
         intent.setAction(android.content.Intent.ACTION_VIEW);
-        Uri uri = Uri.fromFile(file);
-        if (mimeType == null) {
-            mimeType = getMimeType(uri.toString());
+        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        if (!TextUtils.isEmpty(mimeType)) {
+            intent.setDataAndType(uri, mimeType);
+        } else {
+            intent.setData(uri);
         }
-        intent.setDataAndType(uri, mimeType);
-        if (BasicFunctions.getActiveActivity() != null) {
-            BasicFunctions.getActiveActivity().startActivity(Intent.createChooser(intent, BasicFunctions.getActiveActivity().getString(R.string.label_choose_app_to_open)));
-        }
+        context.startActivity(Intent.createChooser(intent, context.getResources().getString(R.string.label_choose_app_to_open)));
     }
 
     public static void deleteFile(File file) {
@@ -188,6 +218,15 @@ public class FsUtils {
 
     public static File joinPath(File dir, String relative_path) {
         return new File(dir.getAbsolutePath() + File.separator + relative_path);
+    }
+
+    public static Uri getUriFromFile(@NonNull Context context, @NonNull File file) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return FileProvider.getUriForFile(context, BuildConfig.FILES_AUTHORITY, file);
+        } else {
+            return Uri.fromFile(file);
+        }
     }
 
 }

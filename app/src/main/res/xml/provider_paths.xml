@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- internal storage area files, Context.getFilesDir() -->
+    <files-path name="repo" path="/" />
+    <!-- app's external storage area, Context.getExternalFilesDir() -->
+    <external-path name="external" path="/" />
+    <!-- cache, getCacheDir() -->
+    <cache-path name="cache" path="/" />
+    <root-path name="storage" path="/storage/"/>
+</paths>
