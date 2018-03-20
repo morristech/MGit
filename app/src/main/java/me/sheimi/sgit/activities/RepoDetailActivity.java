@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -230,12 +231,14 @@ public class RepoDetailActivity extends SheimiFragmentActivity {
         mStatusFragment = statusFragment;
     }
 
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
         getMenuInflater().inflate(R.menu.repo_detail, menu);
         mSearchItem = menu.findItem(R.id.action_search);
-        mSearchItem.setOnActionExpandListener(mTabItemPagerAdapter);
+        MenuItemCompat.setOnActionExpandListener(mSearchItem, mTabItemPagerAdapter);
         mSearchItem.setVisible(mSelectedTab == COMMITS_FRAGMENT_INDEX);
         SearchView searchView = (SearchView) mSearchItem.getActionView();
         if (searchView != null) {
@@ -387,7 +390,7 @@ public class RepoDetailActivity extends SheimiFragmentActivity {
         mRepo.getRemotes();
     }
 
-    class TabItemPagerAdapter extends FragmentPagerAdapter implements ViewPager.OnPageChangeListener, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
+    class TabItemPagerAdapter extends FragmentPagerAdapter implements ViewPager.OnPageChangeListener, SearchView.OnQueryTextListener, MenuItemCompat.OnActionExpandListener {
 
         private final int[] PAGE_TITLE = {R.string.tab_files_label,
             R.string.tab_commits_label, R.string.tab_status_label};

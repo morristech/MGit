@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatDelegate;
 
+import com.manichord.mgit.transport.MGitHttpConnectionFactory;
+
 import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
@@ -35,6 +37,10 @@ public class SGitApplication extends Application {
     private SecurePrefsHelper mSecPrefs;
     private PreferenceHelper mPrefsHelper;
 
+    static {
+        MGitHttpConnectionFactory.install();
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -56,7 +62,9 @@ public class SGitApplication extends Application {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         // The following line triggers the initialization of ACRA
-        ACRA.init(this);
+        if (!BuildConfig.DEBUG) {
+            ACRA.init(this);
+        }
     }
 
 

@@ -6,12 +6,19 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
+import android.support.v4.view.MenuItemCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.security.ProviderInstaller;
+import com.manichord.mgit.transport.MGitHttpConnectionFactory;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -31,6 +38,7 @@ import me.sheimi.sgit.dialogs.DummyDialogListener;
 import me.sheimi.sgit.dialogs.ImportLocalRepoDialog;
 import me.sheimi.sgit.repo.tasks.repo.CloneTask;
 import me.sheimi.sgit.ssh.PrivateKeyUtils;
+import timber.log.Timber;
 
 public class RepoListActivity extends SheimiFragmentActivity {
 
@@ -43,7 +51,11 @@ public class RepoListActivity extends SheimiFragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         PrivateKeyUtils.migratePrivateKeys();
+
+        initUpdatedSSL();
+
         setContentView(R.layout.activity_main);
         mRepoList = (ListView) findViewById(R.id.repoList);
         mRepoListAdapter = new RepoListAdapter(this);
@@ -135,7 +147,7 @@ public class RepoListActivity extends SheimiFragmentActivity {
             return;
         }
         SearchListener searchListener = new SearchListener();
-        searchItem.setOnActionExpandListener(searchListener);
+        MenuItemCompat.setOnActionExpandListener(searchItem, searchListener);
         searchView.setIconifiedByDefault(true);
         searchView.setOnQueryTextListener(searchListener);
     }
@@ -181,7 +193,8 @@ public class RepoListActivity extends SheimiFragmentActivity {
         }
     }
 
-    public class SearchListener implements SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
+    public class SearchListener implements SearchView.OnQueryTextListener,
+            MenuItemCompat.OnActionExpandListener {
 
         @Override
         public boolean onQueryTextSubmit(String s) {
@@ -220,6 +233,26 @@ public class RepoListActivity extends SheimiFragmentActivity {
 
     public void finish() {
         rawfinish();
+    }
+
+    private void initUpdatedSSL() {
+        try {
+            if (Build.VERSION.SDK_INT < 21) {
+                ProviderInstaller.installIfNeeded(this);
+            }
+        } catch (GooglePlayServicesRepairableException e) {
+            showGooglePlayError(e);
+        } catch (GooglePlayServicesNotAvailableException e) {
+            showGooglePlayError(e);
+        }
+        MGitHttpConnectionFactory.install();
+        Timber.i("Installed custom HTTPS factory");
+    }
+
+    private void showGooglePlayError(Exception e) {
+        Timber.e(e);
+        showMessageDialog(R.string.error_need_play_services_title,
+            getString(R.string.error_need_play_services_message));
     }
 
 }

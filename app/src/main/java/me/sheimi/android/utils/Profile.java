@@ -96,15 +96,3 @@ public class Profile {
         return styled;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
